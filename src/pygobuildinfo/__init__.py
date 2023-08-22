@@ -61,18 +61,23 @@ def get_go_mod(file_name):
                 actual_result = {"Deps":[]}
                 if "Module" in temp_result and "Mod" in temp_result["Module"] and "Path" in temp_result["Module"]["Mod"]:
                     actual_result["Path"] = temp_result["Module"]["Mod"]["Path"]
-                if "Go" in temp_result and "Version" in temp_result["Go"]:
+                if "Go" in temp_result and temp_result["Go"] and "Version" in temp_result["Go"]:
                     actual_result["GoVersion"] = f"go{temp_result['Go']['Version']}"
-                for module_required in temp_result.get("Require",[]):
-                    if "Mod" not in module_required:
-                        continue
-                    if "Path" not in module_required["Mod"]:
-                        continue
-                    if "Version" not in module_required["Mod"]:
-                        continue
-                    actual_result["Deps"].append({
-                        "Path": module_required["Mod"]["Path"],
-                        "Version": module_required["Mod"]["Version"]})
+
+                requires = temp_result.get("Require")
+                if requires:
+                    for module_required in requires:
+                        if "Mod" not in module_required:
+                            continue
+                        if "Path" not in module_required["Mod"]:
+                            continue
+                        if "Version" not in module_required["Mod"]:
+                            continue
+                        actual_result["Deps"].append({
+                            "Path": module_required["Mod"]["Path"],
+                            "Version": module_required["Mod"]["Version"],
+                            "Indirect": module_required["Indirect"],
+                        })
                 result = actual_result
             else:
                 result = temp_result
